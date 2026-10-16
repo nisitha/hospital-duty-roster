@@ -4,5 +4,5 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // Ensures assets load properly on GitHub Pages
+  base: '/hospital-duty-roster/', // Exact repo path for GitHub Pages subfolder deployment
 });
