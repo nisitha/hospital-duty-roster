@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Trash2, X, Calendar } from 'lucide-react';
+import { Trash2, X, Calendar } from 'lucide-react';
 import { DOCTOR_MAP } from '../data/doctors';
 
 export default function DeleteScheduleModal({

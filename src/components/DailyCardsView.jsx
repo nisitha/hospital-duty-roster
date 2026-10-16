@@ -11,8 +11,6 @@ import {
   Trash2,
   Calendar,
   Search,
-  Clock,
-  Sparkles,
 } from 'lucide-react';
 import DoctorBadge from './DoctorBadge';
 import { DOCTOR_MAP } from '../data/doctors';
@@ -226,9 +224,16 @@ export default function DailyCardsView({
                       />
                     </div>
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 mb-1">
-                        <Activity className="w-3 h-3 text-sky-500" />
-                        <span>3rd ICU / Ward</span>
+                      <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
+                        <div className="flex items-center gap-1">
+                          <Activity className="w-3 h-3 text-sky-500" />
+                          <span>3rd ICU / Ward</span>
+                        </div>
+                        {day.dayOfWeek === 'Saturday' && day.weekendOff && day.call3 === day.weekendOff && (
+                          <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1 rounded">
+                            OFF
+                          </span>
+                        )}
                       </div>
                       <DoctorBadge
                         doctorCode={day.call3}
@@ -241,9 +246,21 @@ export default function DailyCardsView({
                   {/* Slot 4 & 5 */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 mb-1">
-                        <Shield className="w-3 h-3 text-emerald-500" />
-                        <span>4th Cover / Relief</span>
+                      <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
+                        <div className="flex items-center gap-1">
+                          <Shield className="w-3 h-3 text-emerald-500" />
+                          <span>4th Cover</span>
+                        </div>
+                        {day.dayOfWeek === 'Saturday' && day.weekendOff && (
+                          <span className="text-[9px] font-bold text-sky-800 bg-sky-100 px-1 rounded">
+                            Covers 3rd
+                          </span>
+                        )}
+                        {day.dayOfWeek === 'Sunday' && day.weekendOff && day.call4 === day.weekendOff && (
+                          <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1 rounded">
+                            OFF
+                          </span>
+                        )}
                       </div>
                       <DoctorBadge
                         doctorCode={day.call4}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users, Moon, CalendarOff, Activity, ShieldCheck } from 'lucide-react';
+import { Calendar, Users, Moon, CalendarOff, ShieldCheck } from 'lucide-react';
 import { DOCTORS } from '../data/doctors';
 
 export default function KpiScorecards({ rosterData }) {
@@ -11,18 +11,6 @@ export default function KpiScorecards({ rosterData }) {
 
   // Weekend days count
   const weekendDays = rosterData.filter((d) => d.isWeekend).length;
-
-  // Total duties assigned across all 6 slots
-  const totalDutiesAssigned = rosterData.reduce((acc, day) => {
-    let count = 0;
-    if (day.call1) count++;
-    if (day.call2) count++;
-    if (day.call3) count++;
-    if (day.call4) count++;
-    if (day.call5) count++;
-    if (day.call6) count++;
-    return acc + count;
-  }, 0);
 
   // Average night shifts per doctor
   const avgNights = activeDoctorsCount ? (nightShiftsCount / activeDoctorsCount).toFixed(1) : 0;

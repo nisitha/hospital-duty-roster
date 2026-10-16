@@ -5,10 +5,8 @@ import {
   LayoutGrid,
   UserCheck,
   BarChart2,
-  Database,
   RotateCcw,
   Printer,
-  Sparkles,
   Download,
 } from 'lucide-react';
 
@@ -19,7 +17,6 @@ export default function Header({
   onExportCSV,
   onPrint,
   rosterCount,
-  lastSavedTime,
 }) {
   const views = [
     { id: 'grid', label: 'Roster Grid', icon: Table, count: rosterCount },
@@ -118,7 +115,7 @@ export default function Header({
               <button
                 onClick={onResetData}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition-colors"
-                title="Reset to original 25-day clinical template"
+                title="Reset to original 47-day clinical template (Oct 15 - Nov 30, 2026)"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
                 <span>Reset</span>

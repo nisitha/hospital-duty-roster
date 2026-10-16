@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import KpiScorecards from './components/KpiScorecards';
 import StaffLegendBar from './components/StaffLegendBar';
@@ -11,9 +11,10 @@ import DeleteScheduleModal from './components/DeleteScheduleModal';
 import Toast from './components/Toast';
 
 import { INITIAL_ROSTER_DATA } from './data/mockRoster';
-import { DOCTORS, DOCTOR_MAP } from './data/doctors';
+import { DOCTOR_MAP } from './data/doctors';
+import { recalculateRosterFromIndex } from './utils/rosterAlgorithm';
 
-const STORAGE_KEY = 'hospital_medical_officer_roster_v2';
+const STORAGE_KEY = 'hospital_medical_officer_roster_v3';
 
 export default function App() {
   // State: Roster Schedule Data with LocalStorage Persistence
@@ -74,23 +75,38 @@ export default function App() {
     setIsAddEditModalOpen(true);
   };
 
-  const handleSaveDaySchedule = (dayData) => {
+  const handleSaveDaySchedule = (dayData, shouldRecalculateFollowing = true) => {
     setRosterData((prev) => {
       const existingIndex = prev.findIndex((d) => d.id === dayData.id || d.date === dayData.date);
 
       if (existingIndex >= 0) {
         // Update existing day
-        const updated = [...prev];
+        let updated = [...prev];
         updated[existingIndex] = { ...updated[existingIndex], ...dayData };
         // Sort chronologically by date
         updated.sort((a, b) => new Date(a.date) - new Date(b.date));
-        showToast(`Roster updated for ${dayData.date}`, 'success');
+
+        // Auto-recalculate following dates forward from edited index
+        const sortedIndex = updated.findIndex((d) => d.id === dayData.id || d.date === dayData.date);
+        if (shouldRecalculateFollowing && sortedIndex >= 0 && sortedIndex < updated.length - 1) {
+          updated = recalculateRosterFromIndex(updated, sortedIndex);
+          showToast('Schedule updated & subsequent days recalculated!', 'success');
+        } else {
+          showToast(`Roster updated for ${dayData.date}`, 'success');
+        }
         return updated;
       } else {
         // Add new day
-        const updated = [...prev, dayData];
+        let updated = [...prev, dayData];
         updated.sort((a, b) => new Date(a.date) - new Date(b.date));
-        showToast(`New schedule added for ${dayData.date}`, 'success');
+
+        const newIndex = updated.findIndex((d) => d.id === dayData.id || d.date === dayData.date);
+        if (shouldRecalculateFollowing && newIndex >= 0 && newIndex < updated.length - 1) {
+          updated = recalculateRosterFromIndex(updated, newIndex);
+          showToast('New schedule added & subsequent days recalculated!', 'success');
+        } else {
+          showToast(`New schedule added for ${dayData.date}`, 'success');
+        }
         return updated;
       }
     });
@@ -110,16 +126,16 @@ export default function App() {
     });
   };
 
-  // Reset to original 25-day clinical template
+  // Reset to original 47-day clinical template (Oct 15 - Nov 30, 2026)
   const handleResetData = () => {
     if (
       window.confirm(
-        'Reset schedule to the default 25-day clinical duty roster template? Custom changes will be overwritten.'
+        'Reset schedule to the default 47-day clinical duty roster template (Oct 15 - Nov 30, 2026)? Custom changes will be overwritten.'
       )
     ) {
       setRosterData(INITIAL_ROSTER_DATA);
       setSelectedDoctor(null);
-      showToast('Reset to original 25-day clinical duty roster', 'info');
+      showToast('Reset to original 47-day clinical duty roster (Oct 15 - Nov 30, 2026)', 'info');
     }
   };
 
@@ -247,12 +263,15 @@ export default function App() {
       </footer>
 
       {/* Modals & Dialogs */}
-      <AddEditScheduleModal
-        isOpen={isAddEditModalOpen}
-        onClose={() => setIsAddEditModalOpen(false)}
-        onSave={handleSaveDaySchedule}
-        editDayData={editingDay}
-      />
+      {isAddEditModalOpen && (
+        <AddEditScheduleModal
+          key={editingDay ? editingDay.id : 'new-day'}
+          isOpen={isAddEditModalOpen}
+          onClose={() => setIsAddEditModalOpen(false)}
+          onSave={handleSaveDaySchedule}
+          editDayData={editingDay}
+        />
+      )}
 
       <DeleteScheduleModal
         isOpen={isDeleteModalOpen}

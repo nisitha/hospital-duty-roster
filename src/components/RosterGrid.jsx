@@ -10,11 +10,7 @@ import {
   CalendarOff,
   Edit3,
   Trash2,
-  Filter,
-  CheckCircle2,
   Calendar,
-  AlertCircle,
-  Clock,
 } from 'lucide-react';
 import DoctorBadge from './DoctorBadge';
 import { DOCTOR_MAP } from '../data/doctors';
@@ -300,22 +296,41 @@ export default function RosterGrid({
 
                     {/* 3rd On-Call */}
                     <td className="py-3 px-3">
-                      <DoctorBadge
-                        doctorCode={day.call3}
-                        size="md"
-                        isHighlighted={selectedDoctor === day.call3}
-                        isDimmed={selectedDoctor && selectedDoctor !== day.call3}
-                      />
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <DoctorBadge
+                          doctorCode={day.call3}
+                          size="md"
+                          isHighlighted={selectedDoctor === day.call3}
+                          isDimmed={selectedDoctor && selectedDoctor !== day.call3}
+                        />
+                        {day.dayOfWeek === 'Saturday' && day.weekendOff && day.call3 === day.weekendOff && (
+                          <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">
+                            OFF
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* 4th On-Call (Cover) */}
                     <td className="py-3 px-3">
-                      <DoctorBadge
-                        doctorCode={day.call4}
-                        size="md"
-                        isHighlighted={selectedDoctor === day.call4}
-                        isDimmed={selectedDoctor && selectedDoctor !== day.call4}
-                      />
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <DoctorBadge
+                          doctorCode={day.call4}
+                          size="md"
+                          isHighlighted={selectedDoctor === day.call4}
+                          isDimmed={selectedDoctor && selectedDoctor !== day.call4}
+                        />
+                        {day.dayOfWeek === 'Saturday' && day.weekendOff && (
+                          <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-1.5 py-0.5 rounded border border-sky-200">
+                            Covers 3rd
+                          </span>
+                        )}
+                        {day.dayOfWeek === 'Sunday' && day.weekendOff && day.call4 === day.weekendOff && (
+                          <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">
+                            OFF
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* 5th On-Call (OPD) */}

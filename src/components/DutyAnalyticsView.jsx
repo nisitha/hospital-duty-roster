@@ -2,18 +2,12 @@ import React, { useMemo } from 'react';
 import {
   BarChart2,
   Moon,
-  Sun,
-  CalendarOff,
   ShieldAlert,
   ShieldCheck,
   Scale,
-  Award,
-  Users,
-  Activity,
   CheckCircle2,
 } from 'lucide-react';
 import { DOCTORS, DOCTOR_MAP } from '../data/doctors';
-import DoctorBadge from './DoctorBadge';
 
 export default function DutyAnalyticsView({ rosterData }) {
   // Aggregate statistics per doctor
@@ -88,7 +82,6 @@ export default function DutyAnalyticsView({ rosterData }) {
 
   // Max count for scaling bars
   const maxNightCount = Math.max(...stats.list.map((d) => d.call1), 5);
-  const maxTotalDuties = Math.max(...stats.list.map((d) => d.totalDuties), 20);
 
   return (
     <div className="space-y-6">
@@ -201,7 +194,7 @@ export default function DutyAnalyticsView({ rosterData }) {
               </h3>
             </div>
             <span className="text-[11px] text-slate-500 font-medium">
-              Target: ~4-5 shifts
+              Target: ~{(rosterData.length / (DOCTORS.length || 6)).toFixed(1)} shifts
             </span>
           </div>
 

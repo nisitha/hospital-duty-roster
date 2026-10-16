@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, X, Filter, UserCheck, Sparkles } from 'lucide-react';
+import { Plus, X, Filter } from 'lucide-react';
 import { DOCTORS } from '../data/doctors';
 
 export default function StaffLegendBar({

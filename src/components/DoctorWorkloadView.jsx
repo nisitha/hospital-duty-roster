@@ -6,27 +6,16 @@ import {
   Activity,
   Shield,
   Stethoscope,
-  Coffee,
   CalendarOff,
   Calendar,
   CheckCircle2,
   Clock,
-  Award,
-  AlertCircle,
-  ChevronRight,
 } from 'lucide-react';
-import { DOCTORS, DOCTOR_MAP, SHIFT_SLOTS } from '../data/doctors';
-import DoctorBadge from './DoctorBadge';
+import { DOCTORS, DOCTOR_MAP } from '../data/doctors';
 
 export default function DoctorWorkloadView({ rosterData, selectedDoctorCode, onSelectDoctor }) {
-  const [activeDocCode, setActiveDocCode] = useState(selectedDoctorCode || 'H');
-
-  // Keep in sync if prop changes
-  React.useEffect(() => {
-    if (selectedDoctorCode) {
-      setActiveDocCode(selectedDoctorCode);
-    }
-  }, [selectedDoctorCode]);
+  const [internalDocCode, setInternalDocCode] = useState('H');
+  const activeDocCode = selectedDoctorCode || internalDocCode;
 
   const currentDoctor = DOCTOR_MAP[activeDocCode] || DOCTORS[0];
 
@@ -112,7 +101,7 @@ export default function DoctorWorkloadView({ rosterData, selectedDoctorCode, onS
     };
   }, [rosterData, activeDocCode]);
 
-  const targetQuota = 4; // Expected night shifts per rotation cycle
+  const targetQuota = Math.max(1, Math.round(rosterData.length / (DOCTORS.length || 6)));
   const quotaPercentage = Math.min(
     Math.round((doctorAnalytics.nightsCount / targetQuota) * 100),
     100
@@ -137,7 +126,7 @@ export default function DoctorWorkloadView({ rosterData, selectedDoctorCode, onS
                 <button
                   key={doc.code}
                   onClick={() => {
-                    setActiveDocCode(doc.code);
+                    setInternalDocCode(doc.code);
                     if (onSelectDoctor) onSelectDoctor(doc.code);
                   }}
                   className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-150 ${

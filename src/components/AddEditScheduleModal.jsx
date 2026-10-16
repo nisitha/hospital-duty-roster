@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Calendar,
@@ -10,11 +10,11 @@ import {
   Coffee,
   CalendarOff,
   AlertTriangle,
-  Check,
-  Sparkles,
   Shuffle,
+  RefreshCw,
 } from 'lucide-react';
 import { DOCTORS, DOCTOR_MAP } from '../data/doctors';
+import { getDayOfWeek, isWeekendDay } from '../utils/rosterAlgorithm';
 
 export default function AddEditScheduleModal({
   isOpen,
@@ -23,79 +23,35 @@ export default function AddEditScheduleModal({
   editDayData, // null if Add Mode, or existing day object if Edit Mode
 }) {
   const isEditMode = Boolean(editDayData);
+  const initialDateStr = editDayData?.date || '2026-10-15';
 
-  // Default tomorrow's date or edit date
-  const [date, setDate] = useState('');
-  const [dayOfWeek, setDayOfWeek] = useState('');
-  const [isWeekend, setIsWeekend] = useState(false);
-  const [call1, setCall1] = useState('H');
-  const [call2, setCall2] = useState('R');
-  const [call3, setCall3] = useState('T');
-  const [call4, setCall4] = useState('L');
-  const [call5, setCall5] = useState('O');
-  const [call6, setCall6] = useState('M');
-  const [weekendOff, setWeekendOff] = useState('');
-  const [notes, setNotes] = useState('');
+  const [date, setDate] = useState(initialDateStr);
+  const [dayOfWeek, setDayOfWeek] = useState(editDayData?.dayOfWeek || getDayOfWeek(initialDateStr));
+  const [isWeekend, setIsWeekend] = useState(
+    editDayData?.isWeekend !== undefined ? editDayData.isWeekend : isWeekendDay(initialDateStr)
+  );
+  const [call1, setCall1] = useState(editDayData?.call1 || 'H');
+  const [call2, setCall2] = useState(editDayData?.call2 || 'R');
+  const [call3, setCall3] = useState(editDayData?.call3 || 'T');
+  const [call4, setCall4] = useState(editDayData?.call4 || 'L');
+  const [call5, setCall5] = useState(editDayData?.call5 || 'O');
+  const [call6, setCall6] = useState(editDayData?.call6 || 'M');
+  const [weekendOff, setWeekendOff] = useState(editDayData?.weekendOff || '');
+  const [notes, setNotes] = useState(editDayData?.notes || '');
+  const [recalculateFollowing, setRecalculateFollowing] = useState(true);
 
   // Calculate day of week and weekend status whenever date changes
   const updateDateDetails = (selectedDate) => {
     setDate(selectedDate);
     if (!selectedDate) return;
-
-    try {
-      const parts = selectedDate.split('-');
-      if (parts.length === 3) {
-        const d = new Date(parts[0], parts[1] - 1, parts[2]);
-        const dayNames = [
-          'Sunday',
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-        ];
-        const dayName = dayNames[d.getDay()];
-        const weekend = d.getDay() === 0 || d.getDay() === 6;
-        setDayOfWeek(dayName);
-        setIsWeekend(weekend);
-        if (!weekend && !isEditMode) {
-          setWeekendOff('');
-        }
-      }
-    } catch {
-      // fallback
+    const dayName = getDayOfWeek(selectedDate);
+    const weekend = isWeekendDay(selectedDate);
+    setDayOfWeek(dayName);
+    setIsWeekend(weekend);
+    if (!weekend && !isEditMode) {
+      setWeekendOff('');
     }
   };
-
-  useEffect(() => {
-    if (editDayData) {
-      setDate(editDayData.date);
-      setDayOfWeek(editDayData.dayOfWeek);
-      setIsWeekend(editDayData.isWeekend);
-      setCall1(editDayData.call1 || 'H');
-      setCall2(editDayData.call2 || 'R');
-      setCall3(editDayData.call3 || 'T');
-      setCall4(editDayData.call4 || 'L');
-      setCall5(editDayData.call5 || 'O');
-      setCall6(editDayData.call6 || 'M');
-      setWeekendOff(editDayData.weekendOff || '');
-      setNotes(editDayData.notes || '');
-    } else {
-      // Default new date: next available day after today or fixed date
-      const today = new Date();
-      const defaultDateStr = '2026-10-26';
-      updateDateDetails(defaultDateStr);
-      setCall1('H');
-      setCall2('R');
-      setCall3('T');
-      setCall4('L');
-      setCall5('O');
-      setCall6('M');
-      setWeekendOff('');
-      setNotes('');
-    }
-  }, [editDayData, isOpen]);
 
   // Conflict Detection: check if any doctor is assigned to multiple slots on the same day
   const conflicts = React.useMemo(() => {
@@ -161,7 +117,7 @@ export default function AddEditScheduleModal({
       notes,
     };
 
-    onSave(payload);
+    onSave(payload, recalculateFollowing);
     onClose();
   };
 
@@ -422,6 +378,26 @@ export default function AddEditScheduleModal({
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
             </div>
+          </div>
+
+          {/* Cascading Auto-Recalculation Toggle */}
+          <div className="p-3.5 bg-indigo-50/70 border border-indigo-200/80 rounded-2xl flex items-start gap-3 shadow-2xs">
+            <input
+              type="checkbox"
+              id="recalculate-following"
+              checked={recalculateFollowing}
+              onChange={(e) => setRecalculateFollowing(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+            />
+            <label htmlFor="recalculate-following" className="text-xs text-slate-700 cursor-pointer select-none">
+              <span className="font-bold text-indigo-950 flex items-center gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5 text-indigo-600" />
+                Auto-recalculate all following dates based on rotation rules
+              </span>
+              <span className="text-slate-500 block mt-0.5 leading-relaxed">
+                Automatically updates downstream shifts from Day X+1 to Nov 30, 2026 using clinical rotation and safe rest coverage rules.
+              </span>
+            </label>
           </div>
 
           {/* Modal Footer Actions */}
